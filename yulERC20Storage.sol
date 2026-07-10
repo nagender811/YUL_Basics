@@ -54,5 +54,35 @@ contract YulERC20Storage {
         }
     }
 
+     function transferBalance(address from,address to,uint256 amount) external {
+        assembly {
+            mstore(0x00, from)
+            mstore(0x20, balances.slot)
+            let fromSlot := keccak256(0x00, 0x40)
+
+            let fromBalance := sload(fromSlot)
+
+            if lt(fromBalance, amount) {
+                revert(0,0)
+            }
+
+            sstore(fromSlot, sub(fromBalance, amount))
+
+            mstore(0x00, to)
+            mstore(0x20, balances.slot)
+            let toSlot:= keccak256(0x00, 0x40)
+
+            let toBalance:= sload(toSlot)
+            let newBalance := add(toBalance, amount)
+
+            if lt(newBalance, toBalance) {
+                revert(0,0)
+            }
+
+            sstore(toSlot, newBalance)
+        }
+     }
+
+
 
 }
