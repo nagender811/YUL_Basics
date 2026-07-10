@@ -28,4 +28,31 @@ contract YulERC20Storage {
 
         return balanceOfAccount;
     }
+
+    function mint(address to, uint256 amount) external {
+        assembly{
+            mstore(0x00, to)
+            mstore(0x20, balances.slot)
+            let slot:= keccak256(0x00,0x40)
+
+            let currentBalance:= sload(slot)
+            let newBalance:= add(currentBalance, amount)
+
+            if lt(newBalance, currentBalance) {
+                revert(0,0)
+            }
+            sstore(slot,newBalance)
+
+            let totalTokenSupply:= sload(totalSupp.slot)
+            let newTokenSupply:= add(totalTokenSupply, amount)
+
+            if lt(newTokenSupply, totalTokenSupply) {
+                revert(0,0)
+            }
+
+            sstore(totalSupp.slot, newTokenSupply)
+        }
+    }
+
+
 }
